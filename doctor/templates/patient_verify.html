@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+{% block title %}Patient Identity Verification{% endblock %}
+
+{% block content %}
+<div class="page-header" style="background: linear-gradient(135deg, #bf360c, #e64a19)">
+    <div class="page-header-icon"><i class="fa-solid fa-fingerprint"></i></div>
+    <div>
+        <h1>Patient Identity Verification</h1>
+        <p>Confirm patient identity before dispensing medicine — Rx: {{ rx.rx_id }}</p>
+    </div>
+</div>
+
+<div class="grid-2">
+    <div>
+        <!-- Patient Summary -->
+        <div class="patient-id-card mb-3">
+            <div class="pid-chip">PRESCRIPTION PATIENT</div>
+            <div class="pid-name">{{ rx.patient_name }}</div>
+            <div class="pid-id">{{ rx.patient_id }}</div>
+            <div class="pid-details">
+                {% if patient %}
+                <div class="pid-detail"><span>Age</span><strong>{{ patient.age }}</strong></div>
+                <div class="pid-detail"><span>Phone</span><strong>{{ patient.phone[-4:].rjust(patient.phone|length, '*')
+                        }}</strong></div>
+                <div class="pid-detail"><span>Blood</span><strong>{{ patient.blood_group }}</strong></div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Verification Methods -->
+        <div class="card">
+            <div class="card-title"><i class="fa-solid fa-shield-check" style="color:#e64a19"></i> Choose Verification
+                Method</div>
+            <div class="verify-methods" style="grid-template-columns:1fr 1fr 1fr">
+                <div class="verify-method" id="m-fingerprint" onclick="selectMethod('fingerprint')">
+                    <i class="fa-solid fa-fingerprint"></i>
+                    <h4>Fingerprint</h4>
+                    <p>Biometric scan</p>
+                </div>
+                <div class="verify-method" id="m-patient_id" onclick="selectMethod('patient_id')">
+                    <i class="fa-solid fa-id-badge"></i>
+                    <h4>Patient ID</h4>
+                    <p>Enter unique ID</p>
+                </div>
+                <div class="verify-method" id="m-otp" onclick="selectMethod('otp')">
+                    <i class="fa-solid fa-mobile-screen-button"></i>
+                    <h4>OTP</h4>
+                    <p>SMS verification</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <!-- Fingerprint Panel -->
+        <form method="POST" action="{{ url_for('patient_verify', rx_id=rx.rx_id) }}" id="verifForm">
+            <input type="hidden" name="method" id="methodInput" value="" />
+            <input type="hidden" name="fingerprint_ok" id="fpOk" value="false" />
+            <input type="hidden" name="patient_id_input" id="pidInput" value="" />
+            <input type="hidden" name="otp_input" id="otpInput" value="" />
+
+            <div class="card verify-panel" id="panel-fingerprint">
+                <div class="card-title"><i class="fa-solid fa-fingerprint" style="color:#e64a19"></i> Fingerprint
+                    Verification</div>
+                <p style="text-align:center;font-size:0.875rem;color:var(--text-secondary);margin-bottom:0.5rem">Ask
+                    patient to place their finger on the scanner</p>
+                <div class="fingerprint-scanner" id="fpScanner" onclick="startFPScan()">
+                    <div class="scan-ring"></div>
+                    <i class="fa-solid fa-fingerprint" id="fpIcon"></i>
+                </div>
+                <p class="text-center" id="fpStatus" style="font-size:0.85rem;color:var(--text-muted)">Tap the scanner
+                    above to begin</p>
+                <button type="submit" class="btn btn-success w-full mt-2" id="fpSubmit" disabled
+                    onclick="document.getElementById('fpOk').value='true'">
+                    <i class="fa-solid fa-check"></i> Confirm Verification
+                </button>
+            </div>
+
+            <div class="card verify-panel" id="panel-patient_id">
+                <div class="card-title"><i class="fa-solid fa-id-badge" style="color:#e64a19"></i> Patient ID
+                    Verification</div>
+                <p style="font-size:0.875rem;color:var(--text-secondary);margin-bottom:1rem">Ask patient to provide
+                    their Patient ID card</p>
+                <div class="form-group">
+                    <label class="form-label">Enter Patient ID</label>
+                    <input type="text" class="form-control" placeholder="e.g. PAT-2024-0001" id="pidField"
+                        style="font-family:monospace;font-size:1rem;letter-spacing:0.05em"
+                        oninput="document.getElementById('pidInput').value=this.value" />
+                </div>
+                <div class="form-hint">The correct ID is: <strong>{{ rx.patient_id }}</strong> (for demo)</div>
+                <button type="submit" class="btn btn-success w-full mt-2">
+                    <i class="fa-solid fa-check"></i> Verify Patient ID
+                </button>
+            </div>
+
+            <div class="card verify-panel" id="panel-otp">
+                <div class="card-title"><i class="fa-solid fa-mobile-screen-button" style="color:#e64a19"></i> OTP
+                    Verification</div>
+                <p style="font-size:0.875rem;color:var(--text-secondary);margin-bottom:1rem">Send a one-time password to
+                    patient's registered phone</p>
+                <button type="button" class="btn btn-primary w-full mb-2" onclick="sendOTP()" id="sendOTPBtn"
+                    style="background:linear-gradient(135deg,#e64a19,#ff5722)">
+                    <i class="fa-solid fa-paper-plane"></i> Send OTP to Patient's Phone
+                </button>
+                <div id="otpSentMsg"
+                    style="display:none;background:#e8f5e9;border-radius:10px;padding:0.9rem;font-size:0.875rem;color:#2e7d32;margin-bottom:1rem">
+                    <i class="fa-solid fa-circle-check"></i> <span id="otpMsg"></span>
+                    <br /><strong>Demo OTP: <span id="showOTP"
+                            style="font-size:1.1rem;letter-spacing:0.2em"></span></strong>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Enter 6-digit OTP</label>
+                    <div class="otp-inputs" id="otpDigits">
+                        <input type="text" class="otp-digit" maxlength="1" id="d0" oninput="otpNext(0)" />
+                        <input type="text" class="otp-digit" maxlength="1" id="d1" oninput="otpNext(1)" />
+                        <input type="text" class="otp-digit" maxlength="1" id="d2" oninput="otpNext(2)" />
+                        <input type="text" class="otp-digit" maxlength="1" id="d3" oninput="otpNext(3)" />
+                        <input type="text" class="otp-digit" maxlength="1" id="d4" oninput="otpNext(4)" />
+                        <input type="text" class="otp-digit" maxlength="1" id="d5" oninput="otpNext(5)" />
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-success w-full" onclick="collectOTP()">
+                    <i class="fa-solid fa-check"></i> Verify OTP
+                </button>
+            </div>
+        </form>
+
+        {% if not ['fingerprint','patient_id','otp']|selectattr('selected') %}
+        <div class="card verify-panel active" id="panel-default" style="text-align:center;padding:3rem">
+            <i class="fa-solid fa-hand-pointer"
+                style="font-size:3rem;color:var(--primary);opacity:0.4;display:block;margin-bottom:1rem"></i>
+            <p style="color:var(--text-muted);font-size:0.875rem">Select a verification method from the options above
+            </p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function selectMethod(method) {
+        document.querySelectorAll('.verify-method').forEach(m => m.classList.remove('active'));
+        document.querySelectorAll('.verify-panel').forEach(p => { p.classList.remove('active'); p.style.display = 'none'; });
+        document.getElementById('m-' + method).classList.add('active');
+        const panel = document.getElementById('panel-' + method);
+        if (panel) { panel.style.display = 'block'; panel.classList.add('active'); }
+        document.getElementById('methodInput').value = method;
+        const def = document.getElementById('panel-default');
+        if (def) def.style.display = 'none';
+    }
+
+    let fpScanning = false, fpDone = false;
+    function startFPScan() {
+        if (fpDone) return;
+        const scanner = document.getElementById('fpScanner');
+        const icon = document.getElementById('fpIcon');
+        const status = document.getElementById('fpStatus');
+        scanner.classList.add('scanning');
+        status.textContent = 'Scanning fingerprint... please hold still';
+        fpScanning = true;
+        setTimeout(() => {
+            scanner.classList.remove('scanning');
+            scanner.classList.add('success');
+            icon.className = 'fa-solid fa-check';
+            status.textContent = '✅ Fingerprint matched — patient verified!';
+            status.style.color = 'var(--success)';
+            document.getElementById('fpSubmit').disabled = false;
+            fpDone = true;
+        }, 2500);
+    }
+
+    function sendOTP() {
+        fetch('/pharmacy/generate-otp/{{ rx.rx_id }}')
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('otpSentMsg').style.display = 'block';
+                document.getElementById('otpMsg').textContent = data.message;
+                document.getElementById('showOTP').textContent = data.otp;
+                document.getElementById('sendOTPBtn').disabled = true;
+                document.getElementById('sendOTPBtn').textContent = '✔ OTP Sent';
+            });
+    }
+
+    function otpNext(i) {
+        const curr = document.getElementById('d' + i);
+        if (curr.value && i < 5) {
+            document.getElementById('d' + (i + 1)).focus();
+        }
+    }
+
+    function collectOTP() {
+        let otp = '';
+        for (let i = 0; i < 6; i++) {
+            otp += document.getElementById('d' + i).value;
+        }
+        document.getElementById('otpInput').value = otp;
+    }
+</script>
+{% endblock %}

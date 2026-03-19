@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Patient Profile — {{ patient.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-icon"><i class="fa-solid fa-user"></i></div>
+    <div>
+        <h1>{{ patient.name }}</h1>
+        <p>Patient Profile &nbsp;·&nbsp; {{ patient.id }}</p>
+    </div>
+    <div style="margin-left:auto">
+        <a href="{{ url_for('create_prescription') }}" class="btn btn-white">
+            <i class="fa-solid fa-file-prescription"></i> New Prescription
+        </a>
+    </div>
+</div>
+
+<div class="grid-2 mb-3">
+    <div class="patient-id-card" style="height:fit-content">
+        <div class="pid-chip">PATIENT DIGITAL ID</div>
+        <div class="pid-name">{{ patient.name }}</div>
+        <div class="pid-id">{{ patient.id }}</div>
+        <div class="pid-details">
+            <div class="pid-detail"><span>Blood</span><strong>{{ patient.blood_group }}</strong></div>
+            <div class="pid-detail"><span>Phone</span><strong>{{ patient.phone }}</strong></div>
+            <div class="pid-detail"><span>Registered</span><strong>{{ patient.registered_on }}</strong></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title"><i class="fa-solid fa-id-card" style="color:var(--primary)"></i> Patient Details</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+            {% for label, val in [
+            ('Full Name', patient.name), ('Age', patient.age),
+            ('Gender', patient.gender), ('Phone', patient.phone),
+            ('Blood Group', patient.blood_group), ('Address', patient.address),
+            ] %}
+            <div class="rx-detail-item">
+                <div class="rx-detail-label">{{ label }}</div>
+                <div class="rx-detail-value">{{ val or '—' }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-title"><i class="fa-solid fa-file-prescription" style="color:var(--primary)"></i> Prescription
+        History ({{ prescriptions|length }})</div>
+    {% if prescriptions %}
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Rx ID</th>
+                    <th>Doctor</th>
+                    <th>Medicines</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>QR Code</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for rx in prescriptions %}
+                <tr>
+                    <td><code
+                            style="background:#f0f4ff;padding:2px 8px;border-radius:6px;color:var(--primary);font-weight:700">{{ rx.rx_id }}</code>
+                    </td>
+                    <td>{{ rx.doctor_name }}</td>
+                    <td>{{ rx.medicines | map(attribute='name') | join(', ') }}</td>
+                    <td>{{ rx.created_on }}</td>
+                    <td><span
+                            class="badge {% if rx.status == 'Issued' %}badge-issued{% else %}badge-active{% endif %}">{{
+                            rx.status }}</span></td>
+                    <td><a href="{{ url_for('qr_display', rx_id=rx.rx_id) }}" class="btn btn-outline"
+                            style="padding:0.4rem 0.9rem;font-size:0.8rem"><i class="fa-solid fa-qrcode"></i></a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center text-muted" style="padding:2rem">
+        <i class="fa-solid fa-file-circle-plus"
+            style="font-size:2rem;opacity:0.3;display:block;margin-bottom:0.75rem"></i>
+        No prescriptions for this patient yet.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

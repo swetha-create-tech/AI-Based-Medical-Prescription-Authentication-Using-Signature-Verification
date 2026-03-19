@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="AI-Powered Biometric Secure Prescription Verification System - Secure digital prescriptions with biometric verification"/>
+  <title>{% block title %}MediVerify{% endblock %} | MediVerify</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<!-- ── Navigation Bar ── -->
+<nav class="navbar" id="mainNav">
+  <div class="nav-brand">
+    <div class="nav-logo"><i class="fa-solid fa-shield-heart"></i></div>
+    <div class="nav-title">
+      <span class="brand-main">Medi<span class="accent">Verify</span></span>
+      <span class="brand-sub">Biometric Prescription System</span>
+    </div>
+  </div>
+  <div class="nav-right">
+    <div class="nav-links" id="navLinks">
+      <a href="{{ url_for('home') }}" class="nav-link {% if request.endpoint == 'home' %}active{% endif %}">
+        <i class="fa-solid fa-house"></i> Home
+      </a>
+      {% if session.get('doctor') %}
+      <a href="{{ url_for('doctor_dashboard') }}" class="nav-link">
+        <i class="fa-solid fa-user-doctor"></i> Doctor
+      </a>
+      <a href="{{ url_for('doctor_logout') }}" class="nav-link nav-logout">
+        <i class="fa-solid fa-right-from-bracket"></i> Logout
+      </a>
+      {% elif session.get('pharmacy') %}
+      <a href="{{ url_for('pharmacy_dashboard') }}" class="nav-link">
+        <i class="fa-solid fa-pills"></i> Pharmacy
+      </a>
+      <a href="{{ url_for('pharmacy_logout') }}" class="nav-link nav-logout">
+        <i class="fa-solid fa-right-from-bracket"></i> Logout
+      </a>
+      {% else %}
+      <a href="{{ url_for('doctor_login') }}" class="nav-link {% if 'doctor' in request.endpoint %}active{% endif %}">
+        <i class="fa-solid fa-user-doctor"></i> Doctor
+      </a>
+      <a href="{{ url_for('pharmacy_login') }}" class="nav-link {% if 'pharmacy' in request.endpoint %}active{% endif %}">
+        <i class="fa-solid fa-store-alt"></i> Pharmacy
+      </a>
+      <a href="{{ url_for('admin_dashboard') }}" class="nav-link">
+        <i class="fa-solid fa-gauge-high"></i> Admin
+      </a>
+      {% endif %}
+    </div>
+    <button class="hamburger" id="hamburger" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- ── Flash Messages ── -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="flash-container" id="flashContainer">
+      {% for cat, msg in messages %}
+      <div class="flash flash-{{ cat }}">
+        <i class="fa-solid {% if cat == 'success' %}fa-circle-check{% elif cat == 'danger' %}fa-circle-xmark{% elif cat == 'warning' %}fa-triangle-exclamation{% else %}fa-circle-info{% endif %}"></i>
+        <span>{{ msg }}</span>
+        <button onclick="this.parentElement.remove()" class="flash-close"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<!-- ── Main Content ── -->
+<main class="main-content">
+  {% block content %}{% endblock %}
+</main>
+
+<!-- ── Footer ── -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <i class="fa-solid fa-shield-heart"></i>
+      <span>MediVerify &mdash; AI-Powered Biometric Prescription System</span>
+    </div>
+    <div class="footer-links">
+      <span>Doctor Portal</span>
+      <span>Pharmacy Portal</span>
+      <span>Administration</span>
+    </div>
+    <div class="footer-copy">&copy; 2024 MediVerify. All rights reserved.</div>
+  </div>
+</footer>
+
+<script>
+function toggleMenu() {
+  document.getElementById('navLinks').classList.toggle('open');
+  document.getElementById('hamburger').classList.toggle('active');
+}
+// Auto-dismiss flash messages
+setTimeout(() => {
+  const fc = document.getElementById('flashContainer');
+  if (fc) fc.style.animation = 'fadeOut 0.5s ease forwards';
+  setTimeout(() => { if (fc) fc.remove(); }, 500);
+}, 5000);
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

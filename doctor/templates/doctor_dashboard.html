@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block title %}Doctor Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-icon"><i class="fa-solid fa-user-doctor"></i></div>
+    <div>
+        <h1>Doctor Dashboard</h1>
+        <p>Welcome back, {{ doctor.name }} &nbsp;·&nbsp; {{ doctor.specialty }} &nbsp;·&nbsp; {{ doctor.hospital }}</p>
+    </div>
+</div>
+
+<div class="grid-2 mb-3">
+    <!-- Profile -->
+    <div class="profile-card">
+        <div class="profile-avatar"><i class="fa-solid fa-user-doctor"></i></div>
+        <div class="profile-name">{{ doctor.name }}</div>
+        <div class="profile-role">{{ doctor.specialty }} &nbsp;|&nbsp; {{ doctor.hospital }}</div>
+        <div class="profile-stats">
+            <div class="profile-stat">
+                <div class="profile-stat-val">{{ patients|length }}</div>
+                <div class="profile-stat-label">My Patients</div>
+            </div>
+            <div class="profile-stat">
+                <div class="profile-stat-val">{{ prescriptions|length }}</div>
+                <div class="profile-stat-label">Prescriptions</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div>
+        <div class="dash-actions">
+            <a href="{{ url_for('register_patient') }}" class="action-card">
+                <div class="action-icon blue"><i class="fa-solid fa-user-plus"></i></div>
+                <h4>Register Patient</h4>
+                <p>Add a new patient profile</p>
+            </a>
+            <a href="{{ url_for('create_prescription') }}" class="action-card">
+                <div class="action-icon green"><i class="fa-solid fa-file-prescription"></i></div>
+                <h4>New Prescription</h4>
+                <p>Create digital prescription</p>
+            </a>
+            <a href="{{ url_for('admin_dashboard') }}" class="action-card">
+                <div class="action-icon orange"><i class="fa-solid fa-gauge-high"></i></div>
+                <h4>View Records</h4>
+                <p>All prescriptions</p>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- My Patients -->
+<div class="card mb-3">
+    <div class="card-title"><i class="fa-solid fa-users" style="color:var(--primary)"></i> My Patients ({{
+        patients|length }})</div>
+    {% if patients %}
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Patient ID</th>
+                    <th>Name</th>
+                    <th>Age / Gender</th>
+                    <th>Phone</th>
+                    <th>Registered On</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in patients %}
+                <tr>
+                    <td><code
+                            style="background:#f0f4ff;padding:2px 8px;border-radius:6px;color:var(--primary);font-weight:700">{{ p.id }}</code>
+                    </td>
+                    <td><strong>{{ p.name }}</strong></td>
+                    <td>{{ p.age }} / {{ p.gender }}</td>
+                    <td>{{ p.phone }}</td>
+                    <td>{{ p.registered_on }}</td>
+                    <td>
+                        <a href="{{ url_for('patient_profile', pid=p.id) }}" class="btn btn-outline"
+                            style="padding:0.4rem 0.9rem;font-size:0.8rem">
+                            <i class="fa-solid fa-eye"></i> View
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center text-muted" style="padding:2rem">
+        <i class="fa-solid fa-user-slash" style="font-size:2.5rem;opacity:0.3;margin-bottom:0.75rem;display:block"></i>
+        No patients registered yet. <a href="{{ url_for('register_patient') }}" class="btn btn-primary"
+            style="margin-top:0.75rem;display:inline-flex">Register First Patient</a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Recent Prescriptions -->
+<div class="card">
+    <div class="card-title"><i class="fa-solid fa-file-prescription" style="color:var(--primary)"></i> Recent
+        Prescriptions</div>
+    {% if prescriptions %}
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Rx ID</th>
+                    <th>Patient</th>
+                    <th>Medicines</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>QR</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for rx in prescriptions %}
+                <tr>
+                    <td><code
+                            style="background:#f0f4ff;padding:2px 8px;border-radius:6px;color:var(--primary);font-weight:700">{{ rx.rx_id }}</code>
+                    </td>
+                    <td>{{ rx.patient_name }}</td>
+                    <td>{{ rx.medicines|map(attribute='name')|join(', ') }}</td>
+                    <td>{{ rx.created_on }}</td>
+                    <td>
+                        <span class="badge {% if rx.status == 'Issued' %}badge-issued{% else %}badge-active{% endif %}">
+                            <i
+                                class="fa-solid {% if rx.status == 'Issued' %}fa-circle-check{% else %}fa-circle{% endif %}"></i>
+                            {{ rx.status }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{{ url_for('qr_display', rx_id=rx.rx_id) }}" class="btn btn-outline"
+                            style="padding:0.4rem 0.9rem;font-size:0.8rem">
+                            <i class="fa-solid fa-qrcode"></i> QR
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center text-muted" style="padding:2rem">No prescriptions yet.</div>
+    {% endif %}
+</div>
+{% endblock %}

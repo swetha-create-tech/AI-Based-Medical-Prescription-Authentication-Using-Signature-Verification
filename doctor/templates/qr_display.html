@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}QR Code — {{ rx.rx_id }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-icon"><i class="fa-solid fa-qrcode"></i></div>
+    <div>
+        <h1>Prescription QR Code</h1>
+        <p>Share this QR code with the patient — pharmacy will scan it to verify</p>
+    </div>
+</div>
+
+<div class="grid-2">
+    <!-- QR Card -->
+    <div class="qr-card">
+        <div
+            style="font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:0.5rem">
+            Prescription ID</div>
+        <div class="qr-rx-id">{{ rx.rx_id }}</div>
+        <div style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.5rem">Scan this QR at the pharmacy
+            counter</div>
+
+        <div class="qr-img-wrapper" id="qrWrapper">
+            <img src="data:image/png;base64,{{ qr_b64 }}" alt="Prescription QR Code" id="qrImg" />
+        </div>
+
+        <div class="d-flex gap-2 justify-between flex-wrap mt-2">
+            <button onclick="downloadQR()" class="btn btn-primary">
+                <i class="fa-solid fa-download"></i> Download QR
+            </button>
+            <button onclick="printQR()" class="btn btn-outline">
+                <i class="fa-solid fa-print"></i> Print
+            </button>
+            <a href="{{ url_for('doctor_dashboard') }}" class="btn btn-outline">
+                <i class="fa-solid fa-arrow-left"></i> Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Prescription Details -->
+    <div>
+        <div class="card mb-3">
+            <div class="card-title"><i class="fa-solid fa-file-prescription" style="color:var(--primary)"></i>
+                Prescription Details</div>
+            <div class="rx-details">
+                <div class="rx-detail-item">
+                    <div class="rx-detail-label">Rx ID</div>
+                    <div class="rx-detail-value">{{ rx.rx_id }}</div>
+                </div>
+                <div class="rx-detail-item">
+                    <div class="rx-detail-label">Status</div>
+                    <div class="rx-detail-value"><span class="badge badge-active"><i class="fa-solid fa-circle"></i> {{
+                            rx.status }}</span></div>
+                </div>
+                <div class="rx-detail-item">
+                    <div class="rx-detail-label">Doctor</div>
+                    <div class="rx-detail-value">{{ rx.doctor_name }}</div>
+                </div>
+                <div class="rx-detail-item">
+                    <div class="rx-detail-label">Hospital</div>
+                    <div class="rx-detail-value">{{ rx.hospital or '—' }}</div>
+                </div>
+                <div class="rx-detail-item">
+                    <div class="rx-detail-label">Patient</div>
+                    <div class="rx-detail-value">{{ rx.patient_name }}</div>
+                </div>
+                <div class="rx-detail-item">
+                    <div class="rx-detail-label">Patient ID</div>
+                    <div class="rx-detail-value">{{ rx.patient_id }}</div>
+                </div>
+                <div class="rx-detail-item">
+                    <div class="rx-detail-label">Created On</div>
+                    <div class="rx-detail-value">{{ rx.created_on }}</div>
+                </div>
+            </div>
+
+            {% if rx.notes %}
+            <div class="mt-2" style="background:#f7f9ff;border-radius:10px;padding:0.9rem 1.1rem;margin-top:1rem">
+                <div class="rx-detail-label mb-1">Additional Notes</div>
+                <p style="font-size:0.9rem;color:var(--text-secondary)">{{ rx.notes }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="card">
+            <div class="card-title"><i class="fa-solid fa-capsules" style="color:var(--primary)"></i> Prescribed
+                Medicines</div>
+            <table class="med-table">
+                <thead>
+                    <tr>
+                        <th>Medicine</th>
+                        <th>Dosage</th>
+                        <th>Frequency</th>
+                        <th>Duration</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for med in rx.medicines %}
+                    <tr>
+                        <td><strong>{{ med.name }}</strong></td>
+                        <td>{{ med.dosage }}</td>
+                        <td>{{ med.frequency }}</td>
+                        <td>{{ med.duration }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function downloadQR() {
+        const img = document.getElementById('qrImg');
+        const a = document.createElement('a');
+        a.href = img.src;
+        a.download = 'Prescription_{{ rx.rx_id }}.png';
+        a.click();
+    }
+    function printQR() {
+        const win = window.open('', '_blank');
+        win.document.write(`
+    <html><head><title>Prescription QR — {{ rx.rx_id }}</title>
+    <style>body{font-family:Arial,sans-serif;text-align:center;padding:40px}h2{color:#0d47a1}p{color:#666;font-size:14px}img{max-width:250px;border:2px solid #eee;padding:10px;border-radius:12px}</style>
+    </head><body>
+    <h2>MediVerify — Digital Prescription</h2>
+    <p>Prescription ID: <strong>{{ rx.rx_id }}</strong></p>
+    <p>Patient: <strong>{{ rx.patient_name }}</strong> &nbsp;|&nbsp; Doctor: <strong>{{ rx.doctor_name }}</strong></p>
+    <img src="${document.getElementById('qrImg').src}" alt="QR Code"/>
+    <p style="margin-top:20px;font-size:12px;color:#999">Scan at pharmacy for verification. Valid until issued.</p>
+    </body></html>`);
+        win.print();
+    }
+</script>
+{% endblock %}

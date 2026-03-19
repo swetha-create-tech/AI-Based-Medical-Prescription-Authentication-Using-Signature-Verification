@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Pharmacy Login{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="auth-container">
+        <div class="auth-illustration"
+            style="background: linear-gradient(155deg, #4a148c 0%, #6a1b9a 50%, #7b1fa2 100%)">
+            <div class="auth-illus-icon"><i class="fa-solid fa-store-alt"></i></div>
+            <h2>MediVerify Pharmacy Portal</h2>
+            <p>Authorized pharmacies can scan prescription QR codes and verify patient identity before dispensing
+                medicines.</p>
+            <div class="auth-features">
+                <div class="auth-feature"><i class="fa-solid fa-qrcode"></i><span>Scan prescription QR codes</span>
+                </div>
+                <div class="auth-feature"><i class="fa-solid fa-fingerprint"></i><span>Verify patient identity</span>
+                </div>
+                <div class="auth-feature"><i class="fa-solid fa-pills"></i><span>Dispense medicines securely</span>
+                </div>
+                <div class="auth-feature"><i class="fa-solid fa-list-check"></i><span>Track dispensing records</span>
+                </div>
+            </div>
+            <div class="mt-3" style="font-size:0.8rem;opacity:0.7">
+                <p><strong>Demo Credentials:</strong></p>
+                <p>ID: PH001 &nbsp;|&nbsp; Password: pharma123</p>
+            </div>
+        </div>
+        <div class="auth-form-panel">
+            <div class="auth-form-title">Pharmacy Login</div>
+            <div class="auth-form-sub">Enter your pharmacy credentials to continue</div>
+            <form method="POST" action="{{ url_for('pharmacy_login') }}">
+                <div class="form-group">
+                    <label class="form-label">Pharmacy ID</label>
+                    <input type="text" name="pharmacy_id" class="form-control" placeholder="e.g. PH001" required />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" name="password" class="form-control" placeholder="Enter your password"
+                        required />
+                </div>
+                <button type="submit" class="btn btn-primary w-full btn-lg"
+                    style="background: linear-gradient(135deg, #6a1b9a, #ab47bc)">
+                    <i class="fa-solid fa-right-to-bracket"></i> Login to Pharmacy
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

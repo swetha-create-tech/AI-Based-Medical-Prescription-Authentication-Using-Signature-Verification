@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block title %}Create Prescription{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-icon"><i class="fa-solid fa-file-pen"></i></div>
+    <div>
+        <h1>Create Digital Prescription</h1>
+        <p>Fill in prescription details — a QR code will be generated automatically</p>
+    </div>
+</div>
+
+<form method="POST" action="{{ url_for('create_prescription') }}" id="rxForm">
+    <div class="grid-2">
+        <div>
+            <!-- Patient Selection -->
+            <div class="card mb-3">
+                <div class="card-title"><i class="fa-solid fa-user" style="color:var(--primary)"></i> Patient Selection
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Select Patient *</label>
+                    <select name="patient_id" class="form-control form-select" required id="patientSelect"
+                        onchange="updatePatientCard()">
+                        <option value="">-- Choose a registered patient --</option>
+                        {% for pid, p in patients.items() %}
+                        <option value="{{ pid }}" data-name="{{ p.name }}" data-age="{{ p.age }}"
+                            data-phone="{{ p.phone }}" data-blood="{{ p.blood_group }}">{{ p.name }} ({{ pid }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-hint">Can't find patient? <a href="{{ url_for('register_patient') }}"
+                            style="color:var(--primary)">Register first</a></div>
+                </div>
+                <!-- Patient preview card -->
+                <div id="patientCard" style="display:none">
+                    <div class="patient-id-card">
+                        <div class="pid-chip">SELECTED PATIENT</div>
+                        <div class="pid-name" id="pcName">—</div>
+                        <div class="pid-id" id="pcId">—</div>
+                        <div class="pid-details">
+                            <div class="pid-detail"><span>Age</span><strong id="pcAge">—</strong></div>
+                            <div class="pid-detail"><span>Phone</span><strong id="pcPhone">—</strong></div>
+                            <div class="pid-detail"><span>Blood</span><strong id="pcBlood">—</strong></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Medicines -->
+            <div class="card">
+                <div class="card-title"><i class="fa-solid fa-capsules" style="color:var(--primary)"></i> Medicines
+                </div>
+                <div id="medicineList">
+                    <div class="med-row" id="med-0">
+                        <div class="form-group" style="margin:0"><input type="text" name="med_name[]"
+                                class="form-control" placeholder="Medicine name" required /></div>
+                        <div class="form-group" style="margin:0"><input type="text" name="med_dosage[]"
+                                class="form-control" placeholder="Dosage" /></div>
+                        <div class="form-group" style="margin:0"><input type="text" name="med_freq[]"
+                                class="form-control" placeholder="Frequency (e.g. Twice daily)" /></div>
+                        <div class="form-group" style="margin:0"><input type="text" name="med_dur[]"
+                                class="form-control" placeholder="Duration" /></div>
+                        <div></div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-outline mt-2" onclick="addMedicine()">
+                    <i class="fa-solid fa-plus"></i> Add Medicine
+                </button>
+            </div>
+        </div>
+
+        <div>
+            <!-- Notes -->
+            <div class="card mb-3">
+                <div class="card-title"><i class="fa-solid fa-note-medical" style="color:var(--primary)"></i> Additional
+                    Notes</div>
+                <div class="form-group">
+                    <textarea name="notes" class="form-control form-textarea" rows="4"
+                        placeholder="Special instructions, allergies, diet restrictions, follow-up details..."></textarea>
+                </div>
+            </div>
+
+            <!-- Info -->
+            <div class="card mb-3" style="background: linear-gradient(135deg, #e3f2fd, #f0f4ff)">
+                <div class="card-title"><i class="fa-solid fa-info-circle" style="color:var(--primary)"></i> What Gets
+                    Generated</div>
+                <div style="font-size:0.875rem;color:var(--text-secondary);line-height:1.9">
+                    <p>✅ Unique <strong>Prescription ID</strong> — format: RX-YYYYMMDD-NNN</p>
+                    <p>✅ Encrypted <strong>QR Code</strong> containing all prescription data</p>
+                    <p>✅ Prescription <strong>Status</strong> set to Active</p>
+                    <p>✅ Digital signature from the prescribing doctor</p>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg w-full">
+                <i class="fa-solid fa-qrcode"></i> Generate Prescription + QR Code
+            </button>
+            <a href="{{ url_for('doctor_dashboard') }}" class="btn btn-outline w-full mt-2">
+                <i class="fa-solid fa-xmark"></i> Cancel
+            </a>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let medCount = 1;
+    function addMedicine() {
+        const list = document.getElementById('medicineList');
+        const div = document.createElement('div');
+        div.className = 'med-row';
+        div.id = 'med-' + medCount;
+        div.innerHTML = `
+    <div class="form-group" style="margin:0"><input type="text" name="med_name[]" class="form-control" placeholder="Medicine name"/></div>
+    <div class="form-group" style="margin:0"><input type="text" name="med_dosage[]" class="form-control" placeholder="Dosage"/></div>
+    <div class="form-group" style="margin:0"><input type="text" name="med_freq[]" class="form-control" placeholder="Frequency"/></div>
+    <div class="form-group" style="margin:0"><input type="text" name="med_dur[]" class="form-control" placeholder="Duration"/></div>
+    <button type="button" onclick="this.closest('.med-row').remove()" class="btn btn-danger" style="padding:0.5rem 0.8rem;font-size:0.85rem"><i class="fa-solid fa-trash"></i></button>
+  `;
+        list.appendChild(div);
+        medCount++;
+    }
+    function updatePatientCard() {
+        const sel = document.getElementById('patientSelect');
+        const opt = sel.options[sel.selectedIndex];
+        const card = document.getElementById('patientCard');
+        if (sel.value) {
+            card.style.display = 'block';
+            document.getElementById('pcName').textContent = opt.dataset.name;
+            document.getElementById('pcId').textContent = sel.value;
+            document.getElementById('pcAge').textContent = opt.dataset.age;
+            document.getElementById('pcPhone').textContent = opt.dataset.phone;
+            document.getElementById('pcBlood').textContent = opt.dataset.blood || '—';
+        } else {
+            card.style.display = 'none';
+        }
+    }
+</script>
+{% endblock %}

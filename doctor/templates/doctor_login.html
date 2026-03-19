@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Doctor Login{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="auth-container">
+        <div class="auth-illustration">
+            <div class="auth-illus-icon"><i class="fa-solid fa-user-doctor"></i></div>
+            <h2>MediVerify Doctor Portal</h2>
+            <p>Secure biometric authentication for licensed medical professionals. Your credentials are protected with
+                multi-factor verification.</p>
+            <div class="auth-features">
+                <div class="auth-feature"><i class="fa-solid fa-fingerprint"></i><span>Biometric fingerprint scan
+                        required</span></div>
+                <div class="auth-feature"><i class="fa-solid fa-id-badge"></i><span>Doctor ID + password
+                        authentication</span></div>
+                <div class="auth-feature"><i class="fa-solid fa-shield-check"></i><span>End-to-end encrypted
+                        session</span></div>
+                <div class="auth-feature"><i class="fa-solid fa-clock-rotate-left"></i><span>All logins are audited &
+                        logged</span></div>
+            </div>
+            <div class="mt-3" style="font-size:0.8rem;opacity:0.7">
+                <p><strong>Demo Credentials:</strong></p>
+                <p>ID: DR001 &nbsp;|&nbsp; Password: doctor123</p>
+            </div>
+        </div>
+        <div class="auth-form-panel">
+            <div class="auth-form-title">Doctor Login</div>
+            <div class="auth-form-sub">Biometric verification required to proceed</div>
+
+            <!-- Biometric Widget -->
+            <div class="biometric-widget" id="bioWidget" onclick="startBiometric()">
+                <div class="bio-icon"><i class="fa-solid fa-fingerprint" id="bioIcon"></i></div>
+                <div class="bio-label" id="bioLabel">Tap to scan fingerprint</div>
+                <div class="bio-sublabel" id="bioSub">Place your finger on the sensor</div>
+                <div class="bio-progress" id="bioProgress">
+                    <div class="bio-progress-bar" id="bioBar"></div>
+                </div>
+            </div>
+            <input type="hidden" id="biometricVerified" value="false" />
+
+            <form method="POST" action="{{ url_for('doctor_login') }}" id="loginForm">
+                <div class="form-group">
+                    <label class="form-label">Doctor ID</label>
+                    <input type="text" name="doctor_id" class="form-control" placeholder="e.g. DR001" required
+                        autocomplete="off" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" name="password" class="form-control" placeholder="Enter your password"
+                        required />
+                </div>
+                <input type="hidden" name="biometric_verified" id="bioHidden" value="false" />
+                <button type="submit" class="btn btn-primary w-full btn-lg" id="loginBtn" disabled>
+                    <i class="fa-solid fa-right-to-bracket"></i> Login to Portal
+                </button>
+            </form>
+            <div class="mt-2 text-center text-muted" style="font-size:0.8rem">
+                <i class="fa-solid fa-lock" style="color:var(--primary)"></i>
+                This session is protected by SSL encryption
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let bioVerified = false;
+    function startBiometric() {
+        if (bioVerified) return;
+        const widget = document.getElementById('bioWidget');
+        const icon = document.getElementById('bioIcon');
+        const label = document.getElementById('bioLabel');
+        const sub = document.getElementById('bioSub');
+        const prog = document.getElementById('bioProgress');
+        const bar = document.getElementById('bioBar');
+
+        widget.classList.add('scanning');
+        label.textContent = 'Scanning fingerprint...';
+        sub.textContent = 'Please hold still';
+        prog.style.display = 'block';
+        icon.className = 'fa-solid fa-fingerprint';
+
+        setTimeout(() => { bar.style.width = '60%'; }, 100);
+        setTimeout(() => { bar.style.width = '100%'; }, 1500);
+        setTimeout(() => {
+            bioVerified = true;
+            widget.classList.remove('scanning');
+            widget.classList.add('verified');
+            icon.className = 'fa-solid fa-circle-check';
+            label.textContent = 'Fingerprint Verified ✓';
+            sub.textContent = 'Biometric authentication successful';
+            document.getElementById('bioHidden').value = 'true';
+            document.getElementById('loginBtn').disabled = false;
+            document.getElementById('loginBtn').style.background = 'linear-gradient(135deg, #00c853, #00e676)';
+        }, 2200);
+    }
+</script>
+{% endblock %}

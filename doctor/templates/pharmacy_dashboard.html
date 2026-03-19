@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}Pharmacy Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header" style="background: linear-gradient(135deg, #4a148c, #6a1b9a)">
+    <div class="page-header-icon"><i class="fa-solid fa-store-alt"></i></div>
+    <div>
+        <h1>{{ pharmacy.name }}</h1>
+        <p>Pharmacy Dashboard &nbsp;·&nbsp; {{ pharmacy.location }}</p>
+    </div>
+    <div style="margin-left:auto">
+        <a href="{{ url_for('pharmacy_verify') }}" class="btn btn-white">
+            <i class="fa-solid fa-qrcode"></i> Scan Prescription
+        </a>
+    </div>
+</div>
+
+<div class="stats-grid mb-3">
+    <div class="stat-card">
+        <div class="stat-icon">💊</div>
+        <div class="stat-value">{{ issued|length }}</div>
+        <div class="stat-label">Dispensed Today</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">✅</div>
+        <div class="stat-value">{{ issued|selectattr('status', 'equalto', 'Issued')|list|length }}</div>
+        <div class="stat-label">Verified & Issued</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">🔒</div>
+        <div class="stat-value">100%</div>
+        <div class="stat-label">Security Rate</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">⚡</div>
+        <div class="stat-value">~30s</div>
+        <div class="stat-label">Avg Verify Time</div>
+    </div>
+</div>
+
+<div class="grid-2 mb-3">
+    <!-- Quick Scan -->
+    <div class="card" style="text-align:center;background:linear-gradient(135deg,#f3e5f5,#fce4ec)">
+        <div class="card-title" style="justify-content:center"><i class="fa-solid fa-qrcode" style="color:#6a1b9a"></i>
+            Scan Prescription</div>
+        <div style="font-size:5rem;margin:1rem 0">📱</div>
+        <p style="font-size:0.9rem;color:var(--text-secondary);margin-bottom:1.5rem">Scan patient's QR code or enter
+            Prescription ID manually</p>
+        <a href="{{ url_for('pharmacy_verify') }}" class="btn btn-primary"
+            style="background: linear-gradient(135deg, #6a1b9a, #ab47bc)">
+            <i class="fa-solid fa-qrcode"></i> Verify Prescription
+        </a>
+    </div>
+
+    <!-- Pharmacy Info -->
+    <div class="profile-card" style="background: linear-gradient(135deg, #4a148c, #6a1b9a)">
+        <div class="profile-avatar"><i class="fa-solid fa-store-alt"></i></div>
+        <div class="profile-name">{{ pharmacy.name }}</div>
+        <div class="profile-role">{{ pharmacy.location }}</div>
+        <div class="profile-stats">
+            <div class="profile-stat">
+                <div class="profile-stat-val">{{ issued|length }}</div>
+                <div class="profile-stat-label">Total Issued</div>
+            </div>
+            <div class="profile-stat">
+                <div class="profile-stat-val">0</div>
+                <div class="profile-stat-label">Fraud Blocked</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Issued Prescriptions -->
+<div class="card">
+    <div class="card-title"><i class="fa-solid fa-list-check" style="color:#6a1b9a"></i> Dispensing Records ({{
+        issued|length }})</div>
+    {% if issued %}
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Rx ID</th>
+                    <th>Patient</th>
+                    <th>Doctor</th>
+                    <th>Medicines</th>
+                    <th>Issued On</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for rx in issued %}
+                <tr>
+                    <td><code
+                            style="background:#f3e5f5;padding:2px 8px;border-radius:6px;color:#6a1b9a;font-weight:700">{{ rx.rx_id }}</code>
+                    </td>
+                    <td>{{ rx.patient_name }}</td>
+                    <td>{{ rx.doctor_name }}</td>
+                    <td>{{ rx.medicines | map(attribute='name') | join(', ') }}</td>
+                    <td>{{ rx.issued_on }}</td>
+                    <td><span class="badge badge-issued"><i class="fa-solid fa-circle-check"></i> Issued</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center text-muted" style="padding:2rem">
+        <i class="fa-solid fa-pills" style="font-size:2.5rem;opacity:0.3;display:block;margin-bottom:0.75rem"></i>
+        No medicines dispensed yet.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

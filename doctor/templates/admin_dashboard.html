@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="admin-header">
+    <div style="display:flex;align-items:center;gap:1rem">
+        <div
+            style="width:60px;height:60px;border-radius:18px;background:rgba(255,255,255,0.2);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;font-size:1.8rem">
+            <i class="fa-solid fa-gauge-high"></i>
+        </div>
+        <div>
+            <h1 style="font-size:1.75rem;font-weight:800;margin-bottom:0.2rem">Admin Dashboard</h1>
+            <p style="opacity:0.8;font-size:0.9rem">Central monitoring — all records, prescriptions, and patients</p>
+        </div>
+    </div>
+</div>
+
+<div class="admin-stats mb-3">
+    <div class="admin-stat">
+        <div style="font-size:2rem;margin-bottom:0.5rem">🩺</div>
+        <div style="font-size:2rem;font-weight:800;color:var(--primary)">{{ doctors|length }}</div>
+        <div
+            style="font-size:0.75rem;text-transform:uppercase;font-weight:700;color:var(--text-muted);letter-spacing:0.06em">
+            Doctors</div>
+    </div>
+    <div class="admin-stat">
+        <div style="font-size:2rem;margin-bottom:0.5rem">👤</div>
+        <div style="font-size:2rem;font-weight:800;color:var(--primary)">{{ patients|length }}</div>
+        <div
+            style="font-size:0.75rem;text-transform:uppercase;font-weight:700;color:var(--text-muted);letter-spacing:0.06em">
+            Patients</div>
+    </div>
+    <div class="admin-stat">
+        <div style="font-size:2rem;margin-bottom:0.5rem">📋</div>
+        <div style="font-size:2rem;font-weight:800;color:var(--primary)">{{ prescriptions|length }}</div>
+        <div
+            style="font-size:0.75rem;text-transform:uppercase;font-weight:700;color:var(--text-muted);letter-spacing:0.06em">
+            Prescriptions</div>
+    </div>
+    <div class="admin-stat">
+        <div style="font-size:2rem;margin-bottom:0.5rem">✅</div>
+        <div style="font-size:2rem;font-weight:800;color:var(--success)">{{
+            prescriptions.values()|selectattr('status','equalto','Issued')|list|length }}</div>
+        <div
+            style="font-size:0.75rem;text-transform:uppercase;font-weight:700;color:var(--text-muted);letter-spacing:0.06em">
+            Medicines Issued</div>
+    </div>
+</div>
+
+<!-- Search & Filter -->
+<div class="card mb-3" style="padding:1rem">
+    <div class="d-flex gap-2 flex-wrap align-center">
+        <input type="text" id="searchBox" class="form-control" placeholder="Search prescriptions, patients, doctors..."
+            onkeyup="filterTable()" style="max-width:350px" />
+        <select id="statusFilter" class="form-control form-select" onchange="filterTable()" style="max-width:160px">
+            <option value="">All Statuses</option>
+            <option value="Active">Active</option>
+            <option value="Issued">Issued</option>
+        </select>
+        <button onclick="exportCSV()" class="btn btn-outline">
+            <i class="fa-solid fa-file-export"></i> Export CSV
+        </button>
+    </div>
+</div>
+
+<!-- All Prescriptions -->
+<div class="card mb-3">
+    <div class="card-title"><i class="fa-solid fa-file-prescription" style="color:var(--primary)"></i> All Prescriptions
+    </div>
+    <div class="table-container">
+        <table class="data-table" id="rxTable">
+            <thead>
+                <tr>
+                    <th>Rx ID</th>
+                    <th>Doctor</th>
+                    <th>Patient</th>
+                    <th>Patient ID</th>
+                    <th>Medicines</th>
+                    <th>Created</th>
+                    <th>Status</th>
+                    <th>Issued By</th>
+                    <th>QR</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for rx_id, rx in prescriptions.items() %}
+                <tr class="rx-row" data-status="{{ rx.status }}">
+                    <td><code
+                            style="background:#f0f4ff;padding:2px 8px;border-radius:6px;color:var(--primary);font-weight:700">{{ rx.rx_id }}</code>
+                    </td>
+                    <td>{{ rx.doctor_name }}</td>
+                    <td><strong>{{ rx.patient_name }}</strong></td>
+                    <td><code style="font-size:0.8rem">{{ rx.patient_id }}</code></td>
+                    <td style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{
+                        rx.medicines | map(attribute='name') | join(', ') }}</td>
+                    <td style="font-size:0.8rem;color:var(--text-muted)">{{ rx.created_on }}</td>
+                    <td>
+                        <span class="badge {% if rx.status == 'Issued' %}badge-issued{% else %}badge-active{% endif %}">
+                            <i
+                                class="fa-solid {% if rx.status == 'Issued' %}fa-circle-check{% else %}fa-circle{% endif %}"></i>
+                            {{ rx.status }}
+                        </span>
+                    </td>
+                    <td style="font-size:0.8rem">{{ rx.issued_pharmacy or '—' }}</td>
+                    <td>
+                        <a href="{{ url_for('qr_display', rx_id=rx.rx_id) }}" class="btn btn-outline"
+                            style="padding:0.35rem 0.75rem;font-size:0.75rem">
+                            <i class="fa-solid fa-qrcode"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Patients Table -->
+<div class="card mb-3">
+    <div class="card-title"><i class="fa-solid fa-users" style="color:var(--primary)"></i> Registered Patients</div>
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Patient ID</th>
+                    <th>Name</th>
+                    <th>Age</th>
+                    <th>Gender</th>
+                    <th>Phone</th>
+                    <th>Blood</th>
+                    <th>Registered On</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pid, p in patients.items() %}
+                <tr>
+                    <td><code
+                            style="background:#f0f4ff;padding:2px 8px;border-radius:6px;color:var(--primary);font-weight:700">{{ p.id }}</code>
+                    </td>
+                    <td><strong>{{ p.name }}</strong></td>
+                    <td>{{ p.age }}</td>
+                    <td>{{ p.gender }}</td>
+                    <td>{{ p.phone }}</td>
+                    <td><span class="badge badge-verified">{{ p.blood_group }}</span></td>
+                    <td>{{ p.registered_on }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Dispensing Log -->
+<div class="card mb-3">
+    <div class="card-title"><i class="fa-solid fa-clock-rotate-left" style="color:var(--primary)"></i> Dispensing Log
+        ({{ logs|length }} records)</div>
+    {% if logs %}
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Rx ID</th>
+                    <th>Patient</th>
+                    <th>Pharmacy</th>
+                    <th>Issued On</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td><code
+                            style="background:#f0f4ff;padding:2px 8px;border-radius:6px;color:var(--primary);font-weight:700">{{ log.rx_id }}</code>
+                    </td>
+                    <td>{{ log.patient }}</td>
+                    <td>{{ log.pharmacy }}</td>
+                    <td>{{ log.issued_on }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center text-muted" style="padding:2rem">No medicines have been dispensed yet.</div>
+    {% endif %}
+</div>
+
+<!-- Doctors Table -->
+<div class="card">
+    <div class="card-title"><i class="fa-solid fa-user-doctor" style="color:var(--primary)"></i> Registered Doctors
+    </div>
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Doctor ID</th>
+                    <th>Name</th>
+                    <th>Specialty</th>
+                    <th>Hospital</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for did, d in doctors.items() %}
+                <tr>
+                    <td><code
+                            style="background:#f0f4ff;padding:2px 8px;border-radius:6px;color:var(--primary);font-weight:700">{{ did }}</code>
+                    </td>
+                    <td><strong>{{ d.name }}</strong></td>
+                    <td>{{ d.specialty }}</td>
+                    <td>{{ d.hospital }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function filterTable() {
+        const q = document.getElementById('searchBox').value.toLowerCase();
+        const status = document.getElementById('statusFilter').value;
+        document.querySelectorAll('.rx-row').forEach(row => {
+            const text = row.textContent.toLowerCase();
+            const rowStatus = row.dataset.status;
+            const matchQ = q === '' || text.includes(q);
+            const matchS = status === '' || rowStatus === status;
+            row.style.display = (matchQ && matchS) ? '' : 'none';
+        });
+    }
+
+    function exportCSV() {
+        const rows = [['Rx ID', 'Doctor', 'Patient', 'Patient ID', 'Medicines', 'Created', 'Status', 'Issued By']];
+        document.querySelectorAll('.rx-row').forEach(row => {
+            const cells = Array.from(row.querySelectorAll('td')).slice(0, 8);
+            rows.push(cells.map(c => '"' + c.textContent.trim().replace(/"/g, '""') + '"'));
+        });
+        const csv = rows.map(r => r.join(',')).join('\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'MediVerify_Prescriptions.csv';
+        a.click();
+    }
+</script>
+{% endblock %}

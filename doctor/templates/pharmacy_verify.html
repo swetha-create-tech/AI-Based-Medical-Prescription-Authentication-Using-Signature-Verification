@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block title %}Verify Prescription{% endblock %}
+
+{% block content %}
+<div class="page-header" style="background: linear-gradient(135deg, #4a148c, #6a1b9a)">
+    <div class="page-header-icon"><i class="fa-solid fa-qrcode"></i></div>
+    <div>
+        <h1>Prescription Verification</h1>
+        <p>Scan QR code or enter Prescription ID to verify</p>
+    </div>
+</div>
+
+<div class="grid-2">
+    <!-- Input Form -->
+    <div>
+        <div class="card mb-3">
+            <div class="card-title"><i class="fa-solid fa-qrcode" style="color:#6a1b9a"></i> QR Code Scanner
+                (Simulation)</div>
+            <div style="background: linear-gradient(135deg, #4a148c, #7b1fa2); border-radius: var(--radius); padding: 2rem; text-align:center; margin-bottom:1rem; cursor:pointer"
+                onclick="simulateScan()" id="qrScanArea">
+                <div style="font-size:3.5rem;margin-bottom:1rem">📷</div>
+                <p style="color:rgba(255,255,255,0.9);font-size:0.9rem">Click to simulate QR code scan</p>
+                <div id="scanStatus" style="font-size:0.8rem;color:rgba(255,255,255,0.7);margin-top:0.5rem"></div>
+            </div>
+            <div class="d-flex align-center gap-2 mb-2" style="color:var(--text-muted);font-size:0.875rem">
+                <div style="flex:1;height:1px;background:rgba(21,101,192,0.15)"></div>
+                <span>OR ENTER MANUALLY</span>
+                <div style="flex:1;height:1px;background:rgba(21,101,192,0.15)"></div>
+            </div>
+            <form method="POST" action="{{ url_for('pharmacy_verify') }}">
+                <div class="form-group">
+                    <label class="form-label">Prescription ID</label>
+                    <input type="text" name="rx_id" class="form-control" placeholder="e.g. RX-20240115-001" id="rxInput"
+                        required style="font-family:monospace;font-size:1rem;letter-spacing:0.05em" />
+                </div>
+                <button type="submit" class="btn btn-primary w-full"
+                    style="background:linear-gradient(135deg,#6a1b9a,#ab47bc)">
+                    <i class="fa-solid fa-search"></i> Verify Prescription
+                </button>
+            </form>
+        </div>
+
+        <div class="card">
+            <div class="card-title"><i class="fa-solid fa-circle-info" style="color:#6a1b9a"></i> Sample Prescription
+                IDs (Demo)</div>
+            <div style="font-size:0.85rem;color:var(--text-secondary)">
+                <p class="mb-2">Use these to test the system:</p>
+                {% if not rx %}
+                <code onclick="document.getElementById('rxInput').value='RX-20240101-001'"
+                    style="display:block;background:#f0f4ff;padding:8px 14px;border-radius:8px;color:var(--primary);font-weight:700;cursor:pointer;margin-bottom:0.5rem">RX-20240101-001 (click to fill)</code>
+                {% endif %}
+                <p style="font-size:0.8rem;color:var(--text-muted)">Or create a new prescription from the Doctor module
+                    first.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results -->
+    <div>
+        {% if rx %}
+        <div class="card" style="border:2px solid rgba(0,200,83,0.3);box-shadow: 0 0 30px rgba(0,200,83,0.1)">
+            <div class="card-title">
+                <i class="fa-solid fa-circle-check" style="color:var(--success)"></i>
+                Prescription Found!
+            </div>
+            <div class="rx-details">
+                <div class="rx-detail-item">
+                    <div class="rx-detail-label">Rx ID</div>
+                    <div class="rx-detail-value">{{ rx.rx_id }}</div>
+                </div>
+                <div class="rx-detail-item">
+                    <div class="rx-detail-label">Status</div>
+                    <div class="rx-detail-value"><span class="badge badge-active">{{ rx.status }}</span></div>
+                </div>
+                <div class="rx-detail-item">
+                    <div class="rx-detail-label">Doctor</div>
+                    <div class="rx-detail-value">{{ rx.doctor_name }}</div>
+                </div>
+                <div class="rx-detail-item">
+                    <div class="rx-detail-label">Patient</div>
+                    <div class="rx-detail-value">{{ rx.patient_name }}</div>
+                </div>
+                <div class="rx-detail-item">
+                    <div class="rx-detail-label">Patient ID</div>
+                    <div class="rx-detail-value">{{ rx.patient_id }}</div>
+                </div>
+                <div class="rx-detail-item">
+                    <div class="rx-detail-label">Created</div>
+                    <div class="rx-detail-value">{{ rx.created_on }}</div>
+                </div>
+            </div>
+            <div class="card mb-2 mt-2" style="background:#f7f9ff;padding:1rem">
+                <div class="card-title" style="font-size:0.85rem;padding-bottom:0.5rem;margin-bottom:0.75rem"><i
+                        class="fa-solid fa-capsules" style="color:var(--primary)"></i> Medicines</div>
+                {% for med in rx.medicines %}
+                <div
+                    style="display:flex;justify-content:space-between;font-size:0.875rem;padding:0.35rem 0;border-bottom:1px solid rgba(21,101,192,0.06)">
+                    <strong>{{ med.name }}</strong>
+                    <span style="color:var(--text-muted)">{{ med.dosage }} · {{ med.frequency }} · {{ med.duration
+                        }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            <a href="{{ url_for('patient_verify', rx_id=rx.rx_id) }}" class="btn btn-success w-full btn-lg">
+                <i class="fa-solid fa-fingerprint"></i> Proceed to Patient Verification
+            </a>
+        </div>
+        {% else %}
+        <div class="card" style="text-align:center;padding:3rem">
+            <div style="font-size:4rem;margin-bottom:1rem;opacity:0.3">🔍</div>
+            <h3 style="color:var(--text-secondary);margin-bottom:0.5rem">Awaiting Prescription</h3>
+            <p style="font-size:0.875rem;color:var(--text-muted)">Scan or enter a prescription ID on the left to verify
+                it</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const sampleIds = ['RX-20240101-001'];
+    let scanIdx = 0;
+    function simulateScan() {
+        const area = document.getElementById('qrScanArea');
+        const status = document.getElementById('scanStatus');
+        area.style.opacity = '0.7';
+        status.textContent = '🔍 Scanning...';
+        setTimeout(() => {
+            const id = sampleIds[scanIdx % sampleIds.length];
+            document.getElementById('rxInput').value = id;
+            status.textContent = '✅ QR Code detected: ' + id;
+            area.style.opacity = '1';
+            scanIdx++;
+        }, 1200);
+    }
+</script>
+{% endblock %}

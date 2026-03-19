@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<!-- ── Hero ── -->
+<section class="hero">
+    <div class="hero-inner">
+        <div class="hero-badge"><i class="fa-solid fa-shield-halved"></i> AI-Powered Security</div>
+        <h1>Biometric Secure<br><span class="highlight">Prescription Verification</span></h1>
+        <p class="hero-desc">Eliminating prescription fraud with digital prescriptions, biometric authentication, and
+            QR-code verification — ensuring medicines reach only the right patient.</p>
+        <div class="hero-ctas">
+            <a href="{{ url_for('doctor_login') }}" class="btn btn-white btn-lg"><i class="fa-solid fa-user-doctor"></i>
+                Doctor Login</a>
+            <a href="{{ url_for('pharmacy_login') }}" class="btn btn-outline btn-lg"
+                style="color:#fff;border-color:rgba(255,255,255,0.5)"><i class="fa-solid fa-store-alt"></i> Pharmacy
+                Login</a>
+        </div>
+    </div>
+    <div class="hero-float">
+        <div class="float-card"><i class="fa-solid fa-fingerprint"></i><span>Biometric</span></div>
+        <div class="float-card"><i class="fa-solid fa-qrcode"></i><span>QR Code</span></div>
+        <div class="float-card"><i class="fa-solid fa-file-prescription"></i><span>Digital Rx</span></div>
+        <div class="float-card"><i class="fa-solid fa-shield-check"></i><span>Verified</span></div>
+    </div>
+</section>
+
+<!-- ── Stats ── -->
+<div class="stats-grid mb-4">
+    <div class="stat-card">
+        <div class="stat-icon">🩺</div>
+        <div class="stat-value">{{ stats.doctors }}</div>
+        <div class="stat-label">Doctors</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">👤</div>
+        <div class="stat-value" id="patientCount">{{ stats.patients }}</div>
+        <div class="stat-label">Patients</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">📋</div>
+        <div class="stat-value" id="rxCount">{{ stats.prescriptions }}</div>
+        <div class="stat-label">Prescriptions</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">💊</div>
+        <div class="stat-value">{{ stats.pharmacies }}</div>
+        <div class="stat-label">Pharmacies</div>
+    </div>
+</div>
+
+<!-- ── Modules ── -->
+<div class="section-header">
+    <h2>System Modules</h2>
+    <p>A complete end-to-end prescription verification ecosystem</p>
+</div>
+<div class="module-grid mb-4">
+    <a href="{{ url_for('doctor_login') }}" class="module-card"
+        style="--card-gradient: linear-gradient(135deg,#1565c0,#42a5f5)">
+        <div class="module-icon"><i class="fa-solid fa-user-doctor"></i></div>
+        <h3>Doctor Module</h3>
+        <p>Biometric login, patient registration, and secure digital prescription creation with QR generation.</p>
+        <span class="module-link">Access Portal <i class="fa-solid fa-arrow-right"></i></span>
+    </a>
+    <a href="#" class="module-card" style="--card-gradient: linear-gradient(135deg,#00897b,#26c6da)">
+        <div class="module-icon"><i class="fa-solid fa-person"></i></div>
+        <h3>Patient Module</h3>
+        <p>Unique patient ID generation, profile management, and secure medical records access.</p>
+        <span class="module-link">View Patients <i class="fa-solid fa-arrow-right"></i></span>
+    </a>
+    <a href="{{ url_for('pharmacy_login') }}" class="module-card"
+        style="--card-gradient: linear-gradient(135deg,#6a1b9a,#ab47bc)">
+        <div class="module-icon"><i class="fa-solid fa-store-alt"></i></div>
+        <h3>Pharmacy Module</h3>
+        <p>QR code scanning, prescription verification, and patient identity authentication before dispensing.</p>
+        <span class="module-link">Pharmacy Portal <i class="fa-solid fa-arrow-right"></i></span>
+    </a>
+    <a href="{{ url_for('admin_dashboard') }}" class="module-card"
+        style="--card-gradient: linear-gradient(135deg,#e65100,#ff8f00)">
+        <div class="module-icon"><i class="fa-solid fa-gauge-high"></i></div>
+        <h3>Admin Dashboard</h3>
+        <p>Central monitoring of all prescriptions, patients, pharmacies and dispensing records.</p>
+        <span class="module-link">Open Dashboard <i class="fa-solid fa-arrow-right"></i></span>
+    </a>
+    <div class="module-card" style="--card-gradient: linear-gradient(135deg,#c62828,#ef5350)">
+        <div class="module-icon"><i class="fa-solid fa-fingerprint"></i></div>
+        <h3>Biometric Verification</h3>
+        <p>Multi-factor identity verification using fingerprint simulation, OTP, or patient ID before medicine issuance.
+        </p>
+        <span class="module-link">Learn More <i class="fa-solid fa-arrow-right"></i></span>
+    </div>
+    <div class="module-card" style="--card-gradient: linear-gradient(135deg,#1a5276,#2e86c1)">
+        <div class="module-icon"><i class="fa-solid fa-qrcode"></i></div>
+        <h3>QR Code System</h3>
+        <p>Encrypted QR codes are generated for every prescription containing doctor, patient, and medicine details.</p>
+        <span class="module-link">Learn More <i class="fa-solid fa-arrow-right"></i></span>
+    </div>
+</div>
+
+<!-- ── System Flow ── -->
+<div class="section-header">
+    <h2>System Flow</h2>
+    <p>The complete prescription lifecycle — from creation to dispensing</p>
+</div>
+<div class="flow-section">
+    <div class="flow-steps">
+        <div class="flow-step">
+            <div class="flow-num">1</div><i class="fa-solid fa-user-doctor"></i> Doctor Login
+        </div>
+        <i class="fa-solid fa-chevron-right flow-arrow"></i>
+        <div class="flow-step">
+            <div class="flow-num">2</div><i class="fa-solid fa-user-plus"></i> Register Patient
+        </div>
+        <i class="fa-solid fa-chevron-right flow-arrow"></i>
+        <div class="flow-step">
+            <div class="flow-num">3</div><i class="fa-solid fa-file-pen"></i> Create Prescription
+        </div>
+        <i class="fa-solid fa-chevron-right flow-arrow"></i>
+        <div class="flow-step">
+            <div class="flow-num">4</div><i class="fa-solid fa-qrcode"></i> QR Code Generated
+        </div>
+        <i class="fa-solid fa-chevron-right flow-arrow"></i>
+        <div class="flow-step">
+            <div class="flow-num">5</div><i class="fa-solid fa-store-alt"></i> Pharmacy Scan
+        </div>
+        <i class="fa-solid fa-chevron-right flow-arrow"></i>
+        <div class="flow-step">
+            <div class="flow-num">6</div><i class="fa-solid fa-fingerprint"></i> Patient Verified
+        </div>
+        <i class="fa-solid fa-chevron-right flow-arrow"></i>
+        <div class="flow-step">
+            <div class="flow-num">7</div><i class="fa-solid fa-pills"></i> Medicine Issued
+        </div>
+    </div>
+</div>
+
+<!-- ── Features ── -->
+<div class="section-header mt-3">
+    <h2>Security Features</h2>
+    <p>Multi-layered protection against prescription fraud</p>
+</div>
+<div class="module-grid">
+    {% set features = [
+    ('fa-shield-halved', '#1565c0', 'Anti-Forgery', 'Digital prescriptions with unique IDs and encrypted QR codes
+    prevent any physical duplication.'),
+    ('fa-lock', '#00897b', 'Biometric Auth', 'Doctor identity verified via biometric simulation before any prescription
+    can be created.'),
+    ('fa-clock-rotate-left', '#7b1fa2', 'Audit Trail', 'Every prescription event is logged — creation, scan,
+    verification, and dispensing.'),
+    ('fa-mobile-screen-button', '#e65100', 'OTP Fallback', 'Patients can verify via OTP sent to their registered phone
+    when biometric is unavailable.'),
+    ] %}
+    {% for icon, color, title, desc in features %}
+    <div class="module-card" style="--card-gradient: linear-gradient(135deg, {{ color }}, {{ color }}99)">
+        <div class="module-icon" style="background: linear-gradient(135deg, {{ color }}, {{ color }}99)"><i
+                class="fa-solid {{ icon }}"></i></div>
+        <h3>{{ title }}</h3>
+        <p>{{ desc }}</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

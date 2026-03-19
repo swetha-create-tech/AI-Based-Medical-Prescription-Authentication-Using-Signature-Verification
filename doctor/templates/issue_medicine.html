@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}Issue Medicine — {{ rx.rx_id }}{% endblock %}
+
+{% block content %}
+<div class="page-header" style="background: linear-gradient(135deg, #1b5e20, #2e7d32)">
+    <div class="page-header-icon"><i class="fa-solid fa-pills"></i></div>
+    <div>
+        <h1>Dispense Medicine</h1>
+        <p>Patient identity verified — confirm medicine issuance</p>
+    </div>
+</div>
+
+<div class="grid-2">
+    <!-- Prescription Summary -->
+    <div class="card">
+        <div class="card-title"><i class="fa-solid fa-file-prescription" style="color:var(--primary)"></i> Prescription
+            Summary</div>
+        <div class="rx-details">
+            <div class="rx-detail-item">
+                <div class="rx-detail-label">Rx ID</div>
+                <div class="rx-detail-value">{{ rx.rx_id }}</div>
+            </div>
+            <div class="rx-detail-item">
+                <div class="rx-detail-label">Patient</div>
+                <div class="rx-detail-value">{{ rx.patient_name }}</div>
+            </div>
+            <div class="rx-detail-item">
+                <div class="rx-detail-label">Patient ID</div>
+                <div class="rx-detail-value">{{ rx.patient_id }}</div>
+            </div>
+            <div class="rx-detail-item">
+                <div class="rx-detail-label">Doctor</div>
+                <div class="rx-detail-value">{{ rx.doctor_name }}</div>
+            </div>
+            <div class="rx-detail-item">
+                <div class="rx-detail-label">Created</div>
+                <div class="rx-detail-value">{{ rx.created_on }}</div>
+            </div>
+            <div class="rx-detail-item">
+                <div class="rx-detail-label">Notes</div>
+                <div class="rx-detail-value">{{ rx.notes or '—' }}</div>
+            </div>
+        </div>
+        <div class="mt-2">
+            <div
+                style="font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:0.75rem">
+                Medicines to Dispense</div>
+            <table class="med-table">
+                <thead>
+                    <tr>
+                        <th>Medicine</th>
+                        <th>Dosage</th>
+                        <th>Frequency</th>
+                        <th>Duration</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for med in rx.medicines %}
+                    <tr style="background:rgba(0,200,83,0.04)">
+                        <td><strong>{{ med.name }}</strong></td>
+                        <td>{{ med.dosage }}</td>
+                        <td>{{ med.frequency }}</td>
+                        <td>{{ med.duration }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pharmacy Info & Confirm -->
+    <div>
+        <div class="card mb-3" style="border:2px solid rgba(0,200,83,0.3);background:rgba(0,200,83,0.03)">
+            <div class="card-title"><i class="fa-solid fa-shield-check" style="color:var(--success)"></i> Verification
+                Complete</div>
+            <div style="text-align:center;padding:1rem">
+                <div
+                    style="width:70px;height:70px;border-radius:50%;background:rgba(0,200,83,0.15);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:2rem">
+                    ✅</div>
+                <p style="font-size:0.9rem;color:#2e7d32;font-weight:600">Patient identity has been verified
+                    successfully</p>
+                <p style="font-size:0.8rem;color:var(--text-muted);margin-top:0.25rem">Safe to proceed with medicine
+                    dispensing</p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-title"><i class="fa-solid fa-store-alt" style="color:#6a1b9a"></i> Dispensing Pharmacy
+            </div>
+            <div class="rx-detail-item mb-2">
+                <div class="rx-detail-label">Pharmacy</div>
+                <div class="rx-detail-value">{{ pharmacy.name }}</div>
+            </div>
+            <div class="rx-detail-item mb-2">
+                <div class="rx-detail-label">Location</div>
+                <div class="rx-detail-value">{{ pharmacy.location }}</div>
+            </div>
+            <div class="rx-detail-item">
+                <div class="rx-detail-label">Date & Time</div>
+                <div class="rx-detail-value" id="issueTime">—</div>
+            </div>
+        </div>
+
+        <form method="POST" action="{{ url_for('issue_medicine', rx_id=rx.rx_id) }}">
+            <button type="submit" class="btn btn-success w-full btn-lg" style="font-size:1.1rem;padding:1.1rem">
+                <i class="fa-solid fa-pills"></i> Confirm Medicine Dispensed
+            </button>
+        </form>
+        <a href="{{ url_for('pharmacy_verify') }}" class="btn btn-outline w-full mt-2">
+            <i class="fa-solid fa-xmark"></i> Cancel
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function updateTime() {
+        const now = new Date();
+        document.getElementById('issueTime').textContent = now.toLocaleString('en-IN');
+    }
+    updateTime();
+    setInterval(updateTime, 1000);
+</script>
+{% endblock %}
